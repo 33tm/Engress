@@ -6,6 +6,8 @@ node_modules
 # Client
 expo-env.d.ts
 .expo
+android
+ios
 
 # Server
 whisper
