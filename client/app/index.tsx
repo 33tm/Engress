@@ -22,7 +22,7 @@ export default function Index() {
 
     const [topics, setTopics] = useState<{
         data: string
-        completed: boolean
+        completed: number
     }[]>([])
 
     const {
@@ -37,13 +37,18 @@ export default function Index() {
     }, [isRecording])
 
     async function toggleSession() {
-        if (connecting || !topics.length) return
+        setTopics(topics.filter(({ data }) => data.length))
+
+        if (!topics.length) return
 
         if (connection || isRecording) {
             connection?.close()
             setConnection(undefined)
             stopRecording()
-            setTopics(topics.map(topic => ({ ...topic, completed: false })))
+            setTopics(topics.map(topic => ({
+                ...topic,
+                completed: 0
+            })))
             return
         }
 
@@ -94,7 +99,7 @@ export default function Index() {
                             const indexes = message.split(" ")
                             setTopics(topics.map((topic, i) => {
                                 if (indexes.includes((i + 1).toString()))
-                                    topic.completed = true
+                                    topic.completed = timestamp
                                 return topic
                             }))
                             break
@@ -105,6 +110,11 @@ export default function Index() {
 
             ws.onclose = () => {
                 setConnection(undefined)
+                setConnecting(false)
+                setTopics(topics.map(topic => ({
+                    ...topic,
+                    completed: 0
+                })))
                 stopRecording()
             }
         }
@@ -138,7 +148,8 @@ export default function Index() {
             <View
                 style={{
                     height: "100%",
-                    flexDirection: "column"
+                    flexDirection: "column",
+                    marginHorizontal: 5
                 }}
             >
                 {!connection && (
@@ -160,7 +171,10 @@ export default function Index() {
                             }}
                             onPress={() => setTopics([
                                 ...topics,
-                                { data: "", completed: false }
+                                {
+                                    data: "",
+                                    completed: 0
+                                }
                             ])}
                         >
                             New Topic
@@ -179,6 +193,7 @@ export default function Index() {
                                         justifyContent: "space-between",
                                         backgroundColor: "#111111",
                                         padding: 15,
+                                        paddingHorizontal: 20,
                                         marginBottom: 5,
                                         opacity: completed ? 0.25 : 0.75,
                                         borderRadius: 10
@@ -211,12 +226,12 @@ export default function Index() {
                                                 color: "#FFFFFF",
                                                 fontFamily: "Geist-Regular",
                                                 fontSize: 20,
-                                                lineHeight: 25,
+                                                lineHeight: 24,
                                                 marginVertical: "auto"
                                             }}
                                             onPress={() => setTopics(topics.filter((_, i) => i !== index))}
                                         >
-                                            x
+                                            ✕
                                         </Text>
                                     )}
                                 </View>
@@ -237,7 +252,7 @@ export default function Index() {
                 </ScrollView>
                 <View
                     style={{
-                        marginBottom: 60
+                        marginBottom: 70
                     }}
                 >
                     <Text
@@ -252,10 +267,14 @@ export default function Index() {
                         }}
                         onPress={toggleSession}
                     >
-                        {isRecording ? "Stop Presenting" : "Present"}
+                        {isRecording
+                            ? connecting
+                                ? "Connecting..."
+                                : "Stop Presenting"
+                            : "Present"}
                     </Text>
                 </View>
             </View>
-        </SafeAreaView >
+        </SafeAreaView>
     )
 }
