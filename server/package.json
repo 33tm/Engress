@@ -1,0 +1,14 @@
+{
+    "devDependencies": {
+        "@types/bun": "^1.2.0",
+        "@types/wav": "^1.0.4"
+    },
+    "scripts": {
+        "dev": "bun --watch index.ts",
+        "start": "bun index.ts"
+    },
+    "dependencies": {
+        "openai": "^4.80.1",
+        "wav": "^1.0.2"
+    }
+}

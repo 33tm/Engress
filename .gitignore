@@ -1,0 +1,13 @@
+# Global
+node_modules
+.DS_Store
+.env
+
+# Client
+expo-env.d.ts
+.expo
+
+# Server
+whisper
+temp
+.venv
