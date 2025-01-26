@@ -4,7 +4,11 @@ import { SafeAreaView } from "react-native-safe-area-context"
 
 import { openSettings } from "expo-linking"
 import { StatusBar } from "expo-status-bar"
-import { impactAsync, ImpactFeedbackStyle } from "expo-haptics"
+
+import {
+    impactAsync,
+    ImpactFeedbackStyle
+} from "expo-haptics"
 
 import {
     activateKeepAwakeAsync,
@@ -95,11 +99,12 @@ export default function Index() {
                         }
                         case 1: {
                             console.log(`RESPONSE: ${message}`)
-                            impactAsync(ImpactFeedbackStyle.Heavy)
                             const indexes = message.split(" ")
                             setTopics(topics.map((topic, i) => {
-                                if (indexes.includes((i + 1).toString()))
+                                if (indexes.includes((i + 1).toString())) {
+                                    impactAsync(ImpactFeedbackStyle.Heavy)
                                     topic.completed = timestamp
+                                }
                                 return topic
                             }))
                             break
