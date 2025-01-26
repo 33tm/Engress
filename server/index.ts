@@ -31,7 +31,7 @@ for await (const filename of temp("*"))
     file(`temp/${filename}`).delete()
 
 async function transcribe(filename: string) {
-    const transcript = await $`whisper/build/bin/whisper-cli -f ${resolve(filename)} -m whisper/models/ggml-large-v3-turbo.bin -np -nt`
+    const transcript = await $`whisper/build/bin/whisper-cli -f ${resolve(filename)} -m whisper/models/ggml-${process.env.MODEL}.bin -np -nt`
         .quiet()
         .text()
 
@@ -46,9 +46,7 @@ async function inference(input: string, topics: string[]) {
         messages: [
             {
                 role: "system",
-                content: prompt + topics
-                    .map((point, index) => `${index + 1}. ${point}`)
-                    .join("\n")
+                content: prompt(topics)
             },
             {
                 role: "user",
@@ -180,16 +178,33 @@ serve({
     }
 })
 
-const prompt = `You are tasked with evaluating a transcript of a presentation, provided in sequential chunks. Your task is to identify and return the numbers of points from the list below that are fully discussed. A point is considered fully discussed if all the following criteria are met:
-- Explicit Reference: The point is clearly identified using relevant key terms, events, or ideas 
-- Coherent Discussion: The point is discussed in a clear, coherent sentence or phrase, without ambiguity.
-- Contextual Confirmation: Consider minor transcription errors (e.g., homophones, slight misinterpretations) and use surrounding context to confirm whether the point is being referenced.
+const prompt = (topics: string[]) => `Evaluate a transcript from a presentation, provided in sequential chunks, to determine which topics are fully discussed according to given criteria.
 
-Important Notes:
-- Return the numbers of all fully discussed points, separated by spaces.
-- If no point is fully covered, return "!" (do not include any additional characters).
-- Avoid marking false positives: ensure the reference and discussion are clear and unmistakable.
-- Do not return anything other than numbers, spaces, or exclamation marks.
+- Identify any topic that meets all the criteria listed below as fully discussed:
+  1. **Explicit Reference**: The topic is somewhat identified using relevant key terms, events, or ideas.
+  2. **Coherent Discussion**: The topic is discussed in a clear, coherent sentence or phrase, without ambiguity.
+  3. **Contextual Confirmation**: Consider minor transcription errors (e.g., homophones, slight misinterpretations) and use surrounding context to verify if the topic is referenced.
+  4. **User Generation**: Keep in mind that topics are user generated, so their meanings may deviate slightly from their actual definition.
 
-The numbered points are:
-`
+# Steps
+
+1. Review each chunk in sequence to identify references to numbered topics.
+2. For each reference, check if it meets the criteria for Explicit Reference, Coherent Discussion, and Contextual Confirmation.
+3. Compile a list of numbers corresponding to topics that are fully discussed.
+4. If no topic is fully covered, indicate with "!".
+5. Ensure no false positives; references and discussions must be clear and unmistakable.
+
+# Output Format
+
+- Return the numbers of all fully discussed topics separated by spaces.
+- If no topic is fully covered, return only "!" with no additional characters.
+- Do not return anything other than numbers, spaces, or an exclamation mark.
+
+# The Topics Numbered
+
+${topics.map((point, index) => `${index + 1}. ${point}`).join("\n")}
+
+# Notes
+
+- Accuracy is crucial; avoid marking points unless all criteria are unequivocally met.
+- Pay attention to the context to correct any minor transcription errors.`
