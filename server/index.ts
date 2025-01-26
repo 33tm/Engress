@@ -42,7 +42,8 @@ async function transcribe(filename: string) {
 
 async function inference(input: string, topics: string[]) {
     const response = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
+        model: "gpt-3.5-turbo",
+        max_tokens: topics.length * 2,
         messages: [
             {
                 role: "system",
@@ -137,10 +138,7 @@ serve({
 
             if (!current.writer) return
 
-            if ((current.silence < 10 && (
-                current.length < 2 ||
-                (current.length < 10 && current.silence < 2)
-            ))) return
+            if (current.length < 2 && current.silence < 5) return
 
             if (current.silence >= current.length * 10) return
 
