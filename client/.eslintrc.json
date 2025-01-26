@@ -1,0 +1,29 @@
+{
+    "extends": "expo",
+    "ignorePatterns": "/dist/*",
+    "rules": {
+        "indent": [
+            "error",
+            4,
+            {
+                "SwitchCase": 1
+            }
+        ],
+        "quotes": [
+            "error",
+            "double"
+        ],
+        "semi": [
+            "error",
+            "never"
+        ],
+        "comma-dangle": [
+            "error",
+            "never"
+        ],
+        "eol-last": [
+            "error",
+            "never"
+        ]
+    }
+}

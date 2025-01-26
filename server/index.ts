@@ -10,6 +10,7 @@ interface Connection {
     topics: string[]
     path?: string
     writer?: FileWriter
+    begin?: number
     length: number
     silence: number
 }
@@ -119,6 +120,7 @@ serve({
                         bitDepth: 16
                     })
                     current.length = 0
+                    current.begin = Date.now()
                 }
 
                 current.writer.write(buffer)
@@ -163,10 +165,10 @@ serve({
 
                 inference(transcript, current.topics).then(response => {
                     console.log(`RESPONSE: ${response}`)
-                    ws.send(JSON.stringify([1, response]))
+                    ws.send(JSON.stringify([1, response, current.begin]))
                 })
 
-                ws.send(JSON.stringify([0, transcript]))
+                ws.send(JSON.stringify([0, transcript, current.begin]))
             })
 
             current.path = undefined
